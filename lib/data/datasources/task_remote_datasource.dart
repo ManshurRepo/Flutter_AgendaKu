@@ -5,12 +5,12 @@ import 'package:agendaku_app/data/models/task_response_model.dart';
 import 'package:http/http.dart' as http;
 
 class TaskRemoteDatasource {
-  Future<TaskResponseModel> getTask() async {
+  Future<TasksResponseModel> getTask() async {
     final response = await http.get(
       Uri.parse('${Variables.baseUrl}/api/tasks'),
     );
     if (response.statusCode == 200) {
-      return TaskResponseModel.fromJson(response.body);
+      return TasksResponseModel.fromJson(response.body);
     } else {
       throw Exception('Failed to load tasks');
     }

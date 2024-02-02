@@ -1,21 +1,23 @@
+
+
 import 'dart:convert';
 
-class TaskResponseModel {
+class TasksResponseModel {
   final List<Task> data;
   final Meta meta;
 
-  TaskResponseModel({
+  TasksResponseModel({
     required this.data,
     required this.meta,
   });
 
-  factory TaskResponseModel.fromJson(String str) =>
-      TaskResponseModel.fromMap(json.decode(str));
+  factory TasksResponseModel.fromJson(String str) =>
+      TasksResponseModel.fromMap(json.decode(str));
 
   String toJson() => json.encode(toMap());
 
-  factory TaskResponseModel.fromMap(Map<String, dynamic> json) =>
-      TaskResponseModel(
+  factory TasksResponseModel.fromMap(Map<String, dynamic> json) =>
+      TasksResponseModel(
         data: List<Task>.from(json["data"].map((x) => Task.fromMap(x))),
         meta: Meta.fromMap(json["meta"]),
       );

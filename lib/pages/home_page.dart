@@ -1,38 +1,39 @@
-import 'dart:ffi';
 
-import 'package:agendaku_app/data/datasources/task_remote_datasource.dart';
-import 'package:agendaku_app/data/models/task_response_model.dart';
 import 'package:agendaku_app/pages/add_task_page.dart';
 import 'package:agendaku_app/pages/detail_task_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../bloc/get_task/get_task_bloc.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  bool isLoaded = false;
+  // bool isLoaded = false;
 
-  List<Task> tasks = [];
+  // List<Task> tasks = [];
 
-  Future<void> getTasks() async {
-    setState(() {
-      isLoaded = true;
-    });
-    final model = await TaskRemoteDatasource().getTask();
-    tasks = model.data;
+  // Future<void> getTasks() async {
+  //   setState(() {
+  //     isLoaded = true;
+  //   });
+  //   final model = await TaskRemoteDatasource().getTask();
+  //   tasks = model.data;
 
-    setState(() {
-      isLoaded = false;
-    });
-  }
+  //   setState(() {
+  //     isLoaded = false;
+  //   });
+  // }
 
   @override
   void initState() {
-    getTasks();
+    context.read<GetTaskBloc>().add(DoGetAllTaskEvent());
+    // getTasks();
     super.initState();
   }
 
@@ -53,38 +54,57 @@ class _HomePageState extends State<HomePage> {
         // ),
         // ],
       ),
-      body: isLoaded
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              itemBuilder: (context, index) {
-                return InkWell(
-                  onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                      return DetailTaskPage(
-                        task: tasks[index],
-                      );
-                    }));
-                  },
-                  child: Card(
-                    child: ListTile(
-                      title: Text(tasks[index].attributes.title),
-                      subtitle: Text(tasks[index].attributes.description),
-                      trailing: const Icon(Icons.check_circle),
-                    ),
+      body: BlocBuilder<GetTaskBloc, GetTaskState>(
+        builder: (context, state) {
+          if (state is GetTaskLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          if (state is GetTaskFailure) {
+            return Center(
+              child: Text(state.message),
+            );
+          }
+          if (state is GetTaskInitial) {
+            return const Center(
+              child: Text('No Data'),
+            );
+          }
+
+          final tasks = (state as GetTaskSuccess).tasks;
+
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            itemBuilder: (context, index) {
+              return InkWell(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return DetailTaskPage(
+                      task: tasks[index],
+                    );
+                  }));
+                },
+                child: Card(
+                  child: ListTile(
+                    title: Text(tasks[index].attributes.title),
+                    subtitle: Text(tasks[index].attributes.description),
+                    trailing: const Icon(Icons.check_circle),
                   ),
-                );
-              },
-              itemCount: tasks.length,
-            ),
+                ),
+              );
+            },
+            itemCount: tasks.length,
+          );
+        },
+      ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.lightBlueAccent,
         onPressed: () async {
           await Navigator.push(context, MaterialPageRoute(builder: (context) {
             return const AddTaskPage();
           }));
-          getTasks();
+          // getTasks();
         },
         child: const Icon(
           Icons.add,
@@ -94,3 +114,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
